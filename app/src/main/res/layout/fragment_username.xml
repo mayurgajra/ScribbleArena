@@ -24,15 +24,16 @@
         app:layout_constraintHorizontal_bias="0.5"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent"
-        app:srcCompat="@drawable/ic_appicon_v2" />
+        app:srcCompat="@drawable/ic_scribble_man" />
 
     <com.google.android.material.textview.MaterialTextView
         android:id="@+id/tvWelcome"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="@string/scribblearena"
-        android:textStyle="bold"
         android:textSize="60sp"
+        android:textStyle="bold"
+        app:fontFamily="@font/handwriting"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintHorizontal_bias="0.5"
         app:layout_constraintStart_toStartOf="parent"
@@ -55,10 +56,10 @@
         <com.google.android.material.textfield.TextInputEditText
             android:id="@+id/etUsername"
             style="@style/TextInputStyle"
-            android:maxLength="12"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
-            android:inputType="text" />
+            android:inputType="text"
+            android:maxLength="12" />
 
     </com.google.android.material.textfield.TextInputLayout>
 
