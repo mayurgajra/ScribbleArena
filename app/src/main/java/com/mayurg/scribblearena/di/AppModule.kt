@@ -1,6 +1,10 @@
 package com.mayurg.scribblearena.di
 
 import com.google.gson.Gson
+import com.mayurg.scribblearena.data.remote.api.SetupApi
+import com.mayurg.scribblearena.util.Constants.HTTP_BASE_URL
+import com.mayurg.scribblearena.util.Constants.HTTP_BASE_URL_LOCAL
+import com.mayurg.scribblearena.util.Constants.USE_LOCALHOST
 import com.mayurg.scribblearena.util.DispatcherProvider
 import dagger.Module
 import dagger.Provides
@@ -10,6 +14,8 @@ import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.Dispatchers
 import okhttp3.OkHttpClient
 import okhttp3.logging.HttpLoggingInterceptor
+import retrofit2.Retrofit
+import retrofit2.converter.gson.GsonConverterFactory
 import javax.inject.Singleton
 
 /**
@@ -32,6 +38,17 @@ object AppModule {
 
     @Singleton
     @Provides
+    fun provideSetupApi(okkHttpClient: OkHttpClient): SetupApi {
+        return Retrofit.Builder()
+            .baseUrl(if (USE_LOCALHOST) HTTP_BASE_URL_LOCAL else HTTP_BASE_URL)
+            .addConverterFactory(GsonConverterFactory.create())
+            .client(okkHttpClient)
+            .build()
+            .create(SetupApi::class.java)
+    }
+
+    @Singleton
+    @Provides
     fun providesGsonInstance(): Gson {
         return Gson()
     }
@@ -39,7 +56,7 @@ object AppModule {
     @Singleton
     @Provides
     fun provideDispatcherProvider(): DispatcherProvider {
-        return object : DispatcherProvider{
+        return object : DispatcherProvider {
             override val main: CoroutineDispatcher
                 get() = Dispatchers.Main
             override val io: CoroutineDispatcher
