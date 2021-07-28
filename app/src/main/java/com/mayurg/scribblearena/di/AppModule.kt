@@ -1,5 +1,6 @@
 package com.mayurg.scribblearena.di
 
+import android.content.Context
 import com.google.gson.Gson
 import com.mayurg.scribblearena.data.remote.api.SetupApi
 import com.mayurg.scribblearena.util.Constants.HTTP_BASE_URL
@@ -9,6 +10,7 @@ import com.mayurg.scribblearena.util.DispatcherProvider
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
+import dagger.hilt.android.qualifiers.ApplicationContext
 import dagger.hilt.components.SingletonComponent
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.Dispatchers
@@ -46,6 +48,12 @@ object AppModule {
             .build()
             .create(SetupApi::class.java)
     }
+
+    @Singleton
+    @Provides
+    fun provideApplicationContext(
+        @ApplicationContext context: Context
+    ) = context
 
     @Singleton
     @Provides
