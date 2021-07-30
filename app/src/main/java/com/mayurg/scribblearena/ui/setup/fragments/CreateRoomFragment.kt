@@ -1,17 +1,16 @@
-package com.mayurg.scribblearena.ui.setup.fragment
+package com.mayurg.scribblearena.ui.setup.fragments
 
 import android.os.Bundle
 import android.view.View
 import androidx.fragment.app.Fragment
+import com.mayurg.scribblearena.R
 import com.mayurg.scribblearena.databinding.FragmentCreateRoomBinding
-import com.mayurg.scribblearena.databinding.FragmentSelectRoomBinding
-import com.mayurg.scribblearena.databinding.FragmentUsernameBinding
 
 /**
  * Created On 24/07/2021
  * @author Mayur Gajra
  */
-class CreateRoomFragment : Fragment() {
+class CreateRoomFragment : Fragment(R.layout.fragment_create_room) {
 
     private var _binding: FragmentCreateRoomBinding? = null
     private val binding: FragmentCreateRoomBinding

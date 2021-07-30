@@ -3,6 +3,8 @@ package com.mayurg.scribblearena.di
 import android.content.Context
 import com.google.gson.Gson
 import com.mayurg.scribblearena.data.remote.api.SetupApi
+import com.mayurg.scribblearena.repository.DefaultSetupRepository
+import com.mayurg.scribblearena.repository.SetupRepository
 import com.mayurg.scribblearena.util.Constants.HTTP_BASE_URL
 import com.mayurg.scribblearena.util.Constants.HTTP_BASE_URL_LOCAL
 import com.mayurg.scribblearena.util.Constants.USE_LOCALHOST
@@ -27,6 +29,13 @@ import javax.inject.Singleton
 @Module
 @InstallIn(SingletonComponent::class)
 object AppModule {
+
+    @Singleton
+    @Provides
+    fun provideSetupRepository(
+        setupApi: SetupApi,
+        @ApplicationContext context: Context
+    ): SetupRepository = DefaultSetupRepository(setupApi, context)
 
     @Singleton
     @Provides

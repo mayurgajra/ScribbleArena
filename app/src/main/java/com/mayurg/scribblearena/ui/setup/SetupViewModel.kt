@@ -4,13 +4,13 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.mayurg.scribblearena.data.remote.ws.Room
 import com.mayurg.scribblearena.repository.SetupRepository
-import com.mayurg.scribblearena.util.Constants
 import com.mayurg.scribblearena.util.Constants.MAX_ROOM_NAME_LENGTH
 import com.mayurg.scribblearena.util.Constants.MAX_USERNAME_LENGTH
 import com.mayurg.scribblearena.util.Constants.MIN_ROOM_NAME_LENGTH
 import com.mayurg.scribblearena.util.Constants.MIN_USERNAME_LENGTH
 import com.mayurg.scribblearena.util.DispatcherProvider
 import com.mayurg.scribblearena.util.Resource
+import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharedFlow
@@ -22,6 +22,7 @@ import javax.inject.Inject
  * Created On 29/07/2021
  * @author Mayur Gajra
  */
+@HiltViewModel
 class SetupViewModel @Inject constructor(
     private val repository: SetupRepository,
     private val dispatchers: DispatcherProvider
