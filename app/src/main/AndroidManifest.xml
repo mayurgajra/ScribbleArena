@@ -2,6 +2,8 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     package="com.mayurg.scribblearena">
 
+    <uses-permission android:name="android.permission.INTERNET"/>
+
     <application
         android:name=".DrawingApplication"
         android:allowBackup="true"
@@ -9,8 +11,11 @@
         android:label="@string/app_name"
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
+        android:usesCleartextTraffic="true"
         android:theme="@style/Theme.ScribbleArena">
-        <activity android:name=".ui.setup.SetupActivity">
+        <activity
+            android:name=".ui.setup.SetupActivity"
+            android:windowSoftInputMode="adjustResize">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 
@@ -19,8 +24,8 @@
         </activity>
         <activity
             android:name=".ui.drawing.DrawingActivity"
-            android:windowSoftInputMode="adjustPan"
-            android:screenOrientation="portrait"/>
+            android:screenOrientation="portrait"
+            android:windowSoftInputMode="adjustPan" />
 
     </application>
 
