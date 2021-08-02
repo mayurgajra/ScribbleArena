@@ -69,7 +69,7 @@ class SelectRoomFragment : Fragment(R.layout.fragment_select_room) {
 
         binding.btnCreateRoom.setOnClickListener {
             findNavController().navigateSafely(
-                R.id.action_selectRoomFragment_to_drawingActivity,
+                R.id.action_selectRoomFragment_to_createRoomFragment,
                 Bundle().apply {
                     putString("username", args.username)
                 }
