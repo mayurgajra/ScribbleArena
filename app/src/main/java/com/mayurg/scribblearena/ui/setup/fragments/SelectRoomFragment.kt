@@ -42,6 +42,8 @@ class SelectRoomFragment : Fragment(R.layout.fragment_select_room) {
     @Inject
     lateinit var roomAdapter: RoomAdapter
 
+    private var updateRoomsJob: Job? = null
+
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         _binding = FragmentSelectRoomBinding.bind(view)
@@ -122,7 +124,8 @@ class SelectRoomFragment : Fragment(R.layout.fragment_select_room) {
                     val isRoomsEmpty = event.rooms.isEmpty()
                     binding.tvNoRoomsFound.isVisible = isRoomsEmpty
                     binding.ivNoRoomsFound.isVisible = isRoomsEmpty
-                    lifecycleScope.launch {
+                    updateRoomsJob?.cancel()
+                    updateRoomsJob = lifecycleScope.launch {
                         roomAdapter.updateDataset(event.rooms)
                     }
                 }
