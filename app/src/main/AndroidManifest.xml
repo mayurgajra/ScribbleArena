@@ -15,7 +15,7 @@
         android:theme="@style/Theme.ScribbleArena">
         <activity
             android:name=".ui.setup.SetupActivity"
-            android:windowSoftInputMode="adjustResize">
+            android:windowSoftInputMode="adjustPan">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 
