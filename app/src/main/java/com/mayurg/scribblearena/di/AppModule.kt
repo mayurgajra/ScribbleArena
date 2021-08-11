@@ -1,16 +1,27 @@
 package com.mayurg.scribblearena.di
 
+import android.app.Application
 import android.content.Context
 import com.google.gson.Gson
 import com.mayurg.scribblearena.data.remote.api.SetupApi
+import com.mayurg.scribblearena.data.remote.ws.CustomMessageAdapter
+import com.mayurg.scribblearena.data.remote.ws.DrawingApi
+import com.mayurg.scribblearena.data.remote.ws.FlowStreamAdapter
 import com.mayurg.scribblearena.repository.DefaultSetupRepository
 import com.mayurg.scribblearena.repository.SetupRepository
 import com.mayurg.scribblearena.util.Constants.HTTP_BASE_URL
 import com.mayurg.scribblearena.util.Constants.HTTP_BASE_URL_LOCAL
+import com.mayurg.scribblearena.util.Constants.RECONNECT_INTERVAL
 import com.mayurg.scribblearena.util.Constants.USE_LOCALHOST
+import com.mayurg.scribblearena.util.Constants.WS_BASE_URL
+import com.mayurg.scribblearena.util.Constants.WS_BASE_URL_LOCALHOST
 import com.mayurg.scribblearena.util.DispatcherProvider
 import com.mayurg.scribblearena.util.clientId
 import com.mayurg.scribblearena.util.dataStore
+import com.tinder.scarlet.Scarlet
+import com.tinder.scarlet.lifecycle.android.AndroidLifecycle
+import com.tinder.scarlet.retry.LinearBackoffStrategy
+import com.tinder.scarlet.websocket.okhttp.newWebSocketFactory
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -67,6 +78,25 @@ object AppModule {
         return runBlocking { context.dataStore.clientId() }
     }
 
+    @Singleton
+    @Provides
+    fun provideDrawingApi(
+        app: Application,
+        okkHttpClient: OkHttpClient,
+        gson: Gson
+    ): DrawingApi {
+        return Scarlet.Builder()
+            .backoffStrategy(LinearBackoffStrategy(RECONNECT_INTERVAL))
+            .lifecycle(AndroidLifecycle.ofApplicationForeground(app))
+            .webSocketFactory(
+                okkHttpClient.newWebSocketFactory(
+                    if (USE_LOCALHOST) WS_BASE_URL_LOCALHOST else WS_BASE_URL
+                )
+            ).addStreamAdapterFactory(FlowStreamAdapter.Factory)
+            .addMessageAdapterFactory(CustomMessageAdapter.Factory(gson))
+            .build()
+            .create()
+    }
 
     @Singleton
     @Provides
