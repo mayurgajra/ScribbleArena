@@ -6,6 +6,7 @@ import android.util.AttributeSet
 import android.view.MotionEvent
 import android.view.MotionEvent.*
 import android.view.View
+import com.mayurg.scribblearena.data.remote.ws.models.DrawData
 import com.mayurg.scribblearena.util.Constants
 import java.util.*
 import kotlin.math.abs
@@ -42,6 +43,20 @@ class DrawingView @JvmOverloads constructor(
     private var paths = Stack<PathData>()
     private var pathDataChangedListener: ((Stack<PathData>) -> Unit)? = null
 
+    var roomName: String? = null
+
+    var isUserDrawing = false
+        set(value) {
+            isEnabled = value
+            field = value
+        }
+
+    private var onDrawListener: ((DrawData) -> Unit)? = null
+
+    fun setOnDrawListener(listener: (DrawData) -> Unit) {
+        onDrawListener = listener
+    }
+
     fun setPathDataChangedListener(listener: (Stack<PathData>) -> Unit) {
         pathDataChangedListener = listener
     }
@@ -58,7 +73,7 @@ class DrawingView @JvmOverloads constructor(
         super.onDraw(canvas)
         val initialColor = paint.color
         val initialThickness = paint.strokeWidth
-        for(pathData in paths) {
+        for (pathData in paths) {
             paint.apply {
                 color = pathData.color
                 strokeWidth = pathData.thickness
@@ -77,15 +92,24 @@ class DrawingView @JvmOverloads constructor(
         path.moveTo(x, y)
         curX = x
         curY = y
+        onDrawListener?.let { draw ->
+            val drawData = createDrawData(x, y, x, y, ACTION_DOWN)
+            draw(drawData)
+        }
         invalidate()
     }
 
     private fun movedTouch(toX: Float, toY: Float) {
         val dx = abs(toX - (curX ?: return))
         val dy = abs(toY - (curY ?: return))
-        if(dx >= smoothness || dy >= smoothness) {
+        if (dx >= smoothness || dy >= smoothness) {
             isDrawing = true
             path.quadTo(curX!!, curY!!, (curX!! + toX) / 2f, (curY!! + toY) / 2f)
+
+            onDrawListener?.let { draw ->
+                val drawData = createDrawData(curX!!, curY!!, toX, toY, ACTION_MOVE)
+                draw(drawData)
+            }
 
             curX = toX
             curY = toY
@@ -100,22 +124,45 @@ class DrawingView @JvmOverloads constructor(
         pathDataChangedListener?.let { change ->
             change(paths)
         }
+        onDrawListener?.let { draw ->
+            val drawData = createDrawData(curX!!, curY!!, curX!!, curY!!, ACTION_UP)
+            draw(drawData)
+        }
         path = Path()
         invalidate()
     }
 
     override fun onTouchEvent(event: MotionEvent?): Boolean {
-        if(!isEnabled) {
+        if (!isEnabled) {
             return false
         }
         val newX = event?.x
         val newY = event?.y
-        when(event?.action) {
+        when (event?.action) {
             ACTION_DOWN -> startedTouch(newX ?: return false, newY ?: return false)
             ACTION_MOVE -> movedTouch(newX ?: return false, newY ?: return false)
             ACTION_UP -> releasedTouch()
         }
         return true
+    }
+
+    private fun createDrawData(
+        fromX: Float,
+        fromY: Float,
+        toX: Float,
+        toY: Float,
+        motionEvent: Int
+    ): DrawData {
+        return DrawData(
+            roomName ?: throw IllegalStateException("Must set the roomName in drawing view"),
+            paint.color,
+            paint.strokeWidth,
+            fromX / viewWidth!!,
+            fromY / viewHeight!!,
+            toX / viewWidth!!,
+            toY / viewHeight!!,
+            motionEvent
+        )
     }
 
     fun setThickness(thickness: Float) {
