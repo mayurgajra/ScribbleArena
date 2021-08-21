@@ -11,6 +11,7 @@ import com.mayurg.scribblearena.databinding.FragmentUsernameBinding
 import com.mayurg.scribblearena.ui.setup.UsernameViewModel
 import com.mayurg.scribblearena.util.Constants.MAX_USERNAME_LENGTH
 import com.mayurg.scribblearena.util.Constants.MIN_USERNAME_LENGTH
+import com.mayurg.scribblearena.util.hideKeyboard
 import com.mayurg.scribblearena.util.navigateSafely
 import com.mayurg.scribblearena.util.snackbar
 import dagger.hilt.android.AndroidEntryPoint
@@ -39,6 +40,7 @@ class UsernameFragment : Fragment(R.layout.fragment_username) {
             viewModel.validateUsernameAndNavigateToSelectRoom(
                 binding.etUsername.text.toString()
             )
+            requireActivity().hideKeyboard(binding.root)
         }
     }
 

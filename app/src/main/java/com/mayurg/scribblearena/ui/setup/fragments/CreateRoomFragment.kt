@@ -14,6 +14,7 @@ import com.mayurg.scribblearena.data.remote.ws.Room
 import com.mayurg.scribblearena.databinding.FragmentCreateRoomBinding
 import com.mayurg.scribblearena.ui.setup.CreateRoomViewModel
 import com.mayurg.scribblearena.util.Constants
+import com.mayurg.scribblearena.util.hideKeyboard
 import com.mayurg.scribblearena.util.navigateSafely
 import com.mayurg.scribblearena.util.snackbar
 import dagger.hilt.android.AndroidEntryPoint
@@ -47,6 +48,7 @@ class CreateRoomFragment : Fragment(R.layout.fragment_create_room) {
                     binding.tvMaxPersons.text.toString().toInt()
                 )
             )
+            requireActivity().hideKeyboard(binding.root)
         }
     }
 

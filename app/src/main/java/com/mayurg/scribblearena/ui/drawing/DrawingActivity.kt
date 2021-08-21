@@ -22,6 +22,7 @@ import com.mayurg.scribblearena.adapters.ChatMessageAdapter
 import com.mayurg.scribblearena.data.remote.ws.models.*
 import com.mayurg.scribblearena.databinding.ActivityDrawingBinding
 import com.mayurg.scribblearena.util.Constants
+import com.mayurg.scribblearena.util.hideKeyboard
 import com.tinder.scarlet.WebSocket
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.Job
@@ -104,6 +105,7 @@ class DrawingActivity : AppCompatActivity() {
                 )
             )
             binding.etMessage.text?.clear()
+            hideKeyboard(binding.root)
         }
 
         binding.ibUndo.setOnClickListener {
