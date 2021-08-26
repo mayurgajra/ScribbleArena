@@ -8,6 +8,7 @@ import com.mayurg.scribblearena.data.remote.ws.DrawingApi
 import com.mayurg.scribblearena.data.remote.ws.Room
 import com.mayurg.scribblearena.data.remote.ws.models.*
 import com.mayurg.scribblearena.data.remote.ws.models.DrawAction.Companion.ACTION_UNDO
+import com.mayurg.scribblearena.ui.views.DrawingView
 import com.mayurg.scribblearena.util.CoroutineTimer
 import com.mayurg.scribblearena.util.DispatcherProvider
 import com.tinder.scarlet.WebSocket
@@ -16,6 +17,7 @@ import kotlinx.coroutines.Job
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
+import java.util.*
 import javax.inject.Inject
 
 /**
@@ -41,6 +43,10 @@ class DrawingViewModel @Inject constructor(
         object UndoEvent : SocketEvent()
     }
 
+    private val _pathData = MutableStateFlow(Stack<DrawingView.PathData>())
+    val pathData: StateFlow<Stack<DrawingView.PathData>> = _pathData
+
+
     private val _newWords = MutableStateFlow(NewWords(listOf()))
     val newWords: StateFlow<NewWords> = _newWords
 
@@ -49,6 +55,9 @@ class DrawingViewModel @Inject constructor(
 
     private val _phaseTime = MutableStateFlow(0L)
     val phaseTime: StateFlow<Long> = _phaseTime
+
+    private val _gameState = MutableStateFlow(GameState("", ""))
+    val gameState: StateFlow<GameState> = _gameState
 
     private val _chat = MutableStateFlow<List<BaseModel>>(listOf())
     val chat: StateFlow<List<BaseModel>> = _chat
@@ -83,8 +92,12 @@ class DrawingViewModel @Inject constructor(
         }
     }
 
-    fun cancelTimer(){
+    fun cancelTimer() {
         timerJob?.cancel()
+    }
+
+    fun setPathData(stack: Stack<DrawingView.PathData>) {
+        _pathData.value = stack
     }
 
     fun setChooseWordOverlayVisibility(isVisible: Boolean) {
@@ -147,6 +160,11 @@ class DrawingViewModel @Inject constructor(
                         if (data.phase != Room.Phase.WAITING_FOR_PLAYERS) {
                             setTimer(data.time)
                         }
+                    }
+
+                    is GameState -> {
+                        _gameState.value = data
+                        socketEventChannel.send(SocketEvent.GameStateEvent(data))
                     }
 
                     is Ping -> {

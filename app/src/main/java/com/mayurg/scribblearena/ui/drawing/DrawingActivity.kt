@@ -115,6 +115,9 @@ class DrawingActivity : AppCompatActivity() {
                 viewModel.sendBaseModel(DrawAction(DrawAction.ACTION_UNDO))
             }
         }
+        binding.drawingView.setPathDataChangedListener {
+            viewModel.setPathData(it)
+        }
 
         binding.colorGroup.setOnCheckedChangeListener { group, checkedId ->
             viewModel.checkRadioButton(checkedId)
@@ -131,6 +134,19 @@ class DrawingActivity : AppCompatActivity() {
     override fun onPause() {
         super.onPause()
         binding.rvChat.layoutManager?.onSaveInstanceState()
+    }
+
+    private fun setColorGroupVisibility(isVisible: Boolean) {
+        binding.colorGroup.isVisible = isVisible
+        binding.ibUndo.isVisible = isVisible
+    }
+
+    private fun setMessageInputVisibility(isVisible: Boolean) {
+        binding.apply {
+            tilMessage.isVisible = isVisible
+            ibSend.isVisible = isVisible
+            ibClearText.isVisible = isVisible
+        }
     }
 
     private fun selectColor(color: Int) {
@@ -197,6 +213,20 @@ class DrawingActivity : AppCompatActivity() {
                         binding.drawingView.setThickness(40f)
                     }
                 }
+            }
+        }
+
+        lifecycleScope.launchWhenStarted {
+            viewModel.gameState.collect { gameState ->
+               binding.apply {
+                   tvCurWord.text = gameState.word
+                   val isUserDrawing = gameState.drawingPlayer == args.username
+                   setColorGroupVisibility(isUserDrawing)
+                   setMessageInputVisibility(!isUserDrawing)
+                   drawingView.isUserDrawing = isUserDrawing
+                   ibMic.isVisible = !isUserDrawing
+                   drawingView.isEnabled = isUserDrawing
+               }
             }
         }
 
@@ -330,6 +360,11 @@ class DrawingActivity : AppCompatActivity() {
                         GameError.ERROR_ROOM_NOT_FOUND -> finish()
                     }
                 }
+
+                is DrawingViewModel.SocketEvent.GameStateEvent -> {
+                    binding.drawingView.clear()
+                }
+
                 else -> Unit
             }
         }
