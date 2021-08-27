@@ -19,6 +19,7 @@ import androidx.recyclerview.widget.RecyclerView
 import com.google.android.material.snackbar.Snackbar
 import com.mayurg.scribblearena.R
 import com.mayurg.scribblearena.adapters.ChatMessageAdapter
+import com.mayurg.scribblearena.adapters.PlayerAdapter
 import com.mayurg.scribblearena.data.remote.ws.Room
 import com.mayurg.scribblearena.data.remote.ws.models.*
 import com.mayurg.scribblearena.databinding.ActivityDrawingBinding
@@ -51,6 +52,9 @@ class DrawingActivity : AppCompatActivity() {
     private lateinit var rvPlayers: RecyclerView
     private lateinit var chateMessageAdapter: ChatMessageAdapter
 
+    @Inject
+    private lateinit var playerAdapter: PlayerAdapter
+
     private var updateChatJob: Job? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -73,6 +77,11 @@ class DrawingActivity : AppCompatActivity() {
         val header = layoutInflater.inflate(R.layout.nav_drawer_header, binding.navView)
         rvPlayers = header.findViewById(R.id.rvPlayers)
         binding.root.setDrawerLockMode(DrawerLayout.LOCK_MODE_LOCKED_CLOSED)
+
+        rvPlayers.apply {
+            adapter = playerAdapter
+            layoutManager = LinearLayoutManager(this@DrawingActivity)
+        }
 
         binding.ibPlayers.setOnClickListener {
             binding.root.setDrawerLockMode(DrawerLayout.LOCK_MODE_UNLOCKED)
@@ -218,15 +227,15 @@ class DrawingActivity : AppCompatActivity() {
 
         lifecycleScope.launchWhenStarted {
             viewModel.gameState.collect { gameState ->
-               binding.apply {
-                   tvCurWord.text = gameState.word
-                   val isUserDrawing = gameState.drawingPlayer == args.username
-                   setColorGroupVisibility(isUserDrawing)
-                   setMessageInputVisibility(!isUserDrawing)
-                   drawingView.isUserDrawing = isUserDrawing
-                   ibMic.isVisible = !isUserDrawing
-                   drawingView.isEnabled = isUserDrawing
-               }
+                binding.apply {
+                    tvCurWord.text = gameState.word
+                    val isUserDrawing = gameState.drawingPlayer == args.username
+                    setColorGroupVisibility(isUserDrawing)
+                    setMessageInputVisibility(!isUserDrawing)
+                    drawingView.isUserDrawing = isUserDrawing
+                    ibMic.isVisible = !isUserDrawing
+                    drawingView.isEnabled = isUserDrawing
+                }
             }
         }
 
