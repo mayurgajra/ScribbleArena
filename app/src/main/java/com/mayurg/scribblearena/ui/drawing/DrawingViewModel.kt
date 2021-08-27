@@ -47,6 +47,9 @@ class DrawingViewModel @Inject constructor(
     val pathData: StateFlow<Stack<DrawingView.PathData>> = _pathData
 
 
+    private val _players = MutableStateFlow<List<PlayerData>>(listOf())
+    val players: StateFlow<List<PlayerData>> = _players
+
     private val _newWords = MutableStateFlow(NewWords(listOf()))
     val newWords: StateFlow<NewWords> = _newWords
 
@@ -165,6 +168,10 @@ class DrawingViewModel @Inject constructor(
                     is GameState -> {
                         _gameState.value = data
                         socketEventChannel.send(SocketEvent.GameStateEvent(data))
+                    }
+
+                    is PlayersList -> {
+                        _players.value = data.players
                     }
 
                     is Ping -> {

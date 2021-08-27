@@ -53,9 +53,10 @@ class DrawingActivity : AppCompatActivity() {
     private lateinit var chateMessageAdapter: ChatMessageAdapter
 
     @Inject
-    private lateinit var playerAdapter: PlayerAdapter
+    lateinit var playerAdapter: PlayerAdapter
 
     private var updateChatJob: Job? = null
+    private var updatePlayersJob: Job? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -240,6 +241,12 @@ class DrawingActivity : AppCompatActivity() {
         }
 
         lifecycleScope.launchWhenStarted {
+            viewModel.players.collect { players ->
+                updatePlayersList(players)
+            }
+        }
+
+        lifecycleScope.launchWhenStarted {
             viewModel.phaseTime.collect { time ->
                 binding.roundTimerProgressBar.progress = time.toInt()
                 binding.tvRemainingTimeChooseWord.text = (time / 1000L).toString()
@@ -308,6 +315,13 @@ class DrawingActivity : AppCompatActivity() {
             viewModel.chooseWordOverlayVisible.collect { isVisible ->
                 binding.chooseWordOverlay.isVisible = isVisible
             }
+        }
+    }
+
+    private fun updatePlayersList(players: List<PlayerData>) {
+        updatePlayersJob?.cancel()
+        updatePlayersJob = lifecycleScope.launch {
+            playerAdapter.updateDataset(players)
         }
     }
 
