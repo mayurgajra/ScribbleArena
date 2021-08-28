@@ -3,12 +3,15 @@ package com.mayurg.scribblearena.ui.drawing
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.google.gson.Gson
+import com.google.gson.JsonParser
 import com.mayurg.scribblearena.R
 import com.mayurg.scribblearena.data.remote.ws.DrawingApi
 import com.mayurg.scribblearena.data.remote.ws.Room
 import com.mayurg.scribblearena.data.remote.ws.models.*
 import com.mayurg.scribblearena.data.remote.ws.models.DrawAction.Companion.ACTION_UNDO
 import com.mayurg.scribblearena.ui.views.DrawingView
+import com.mayurg.scribblearena.util.Constants.TYPE_DRAW_ACTION
+import com.mayurg.scribblearena.util.Constants.TYPE_DRAW_DATA
 import com.mayurg.scribblearena.util.CoroutineTimer
 import com.mayurg.scribblearena.util.DispatcherProvider
 import com.tinder.scarlet.WebSocket
@@ -39,7 +42,7 @@ class DrawingViewModel @Inject constructor(
         data class NewWordsEvent(val data: NewWords) : SocketEvent()
         data class ChosenWordEvent(val data: ChosenWord) : SocketEvent()
         data class GameErrorEvent(val data: GameError) : SocketEvent()
-        data class RoundDrawInfoEvent(val data: RoundDrawInfo) : SocketEvent()
+        data class RoundDrawInfoEvent(val data: List<BaseModel>) : SocketEvent()
         object UndoEvent : SocketEvent()
     }
 
@@ -172,6 +175,20 @@ class DrawingViewModel @Inject constructor(
 
                     is PlayersList -> {
                         _players.value = data.players
+                    }
+
+                    is RoundDrawInfo -> {
+                        val drawActions = mutableListOf<BaseModel>()
+                        data.data.forEach { drawAction ->
+                            val jsonObject = JsonParser.parseString(drawAction).asJsonObject
+                            val type = when (jsonObject.get("type").asString) {
+                                TYPE_DRAW_DATA -> DrawData::class.java
+                                TYPE_DRAW_ACTION -> DrawAction::class.java
+                                else -> BaseModel::class.java
+                            }
+                            drawActions.add(gson.fromJson(drawAction, type))
+                        }
+                        socketEventChannel.send(SocketEvent.RoundDrawInfoEvent(drawActions))
                     }
 
                     is Ping -> {
