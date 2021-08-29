@@ -23,6 +23,7 @@ import com.mayurg.scribblearena.adapters.PlayerAdapter
 import com.mayurg.scribblearena.data.remote.ws.Room
 import com.mayurg.scribblearena.data.remote.ws.models.*
 import com.mayurg.scribblearena.databinding.ActivityDrawingBinding
+import com.mayurg.scribblearena.ui.dialogs.ExitGameDialog
 import com.mayurg.scribblearena.util.Constants
 import com.mayurg.scribblearena.util.hideKeyboard
 import com.tinder.scarlet.WebSocket
@@ -447,5 +448,14 @@ class DrawingActivity : AppCompatActivity(), LifecycleObserver {
     @OnLifecycleEvent(Lifecycle.Event.ON_STOP)
     private fun onAppInBackground(){
         viewModel.disconnect()
+    }
+
+    override fun onBackPressed() {
+        ExitGameDialog().apply {
+            setPositiveClickListener {
+                viewModel.disconnect()
+                finish()
+            }
+        }.show(supportFragmentManager,null)
     }
 }
