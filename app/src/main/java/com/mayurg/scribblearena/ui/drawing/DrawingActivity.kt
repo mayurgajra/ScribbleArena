@@ -1,10 +1,12 @@
 package com.mayurg.scribblearena.ui.drawing
 
+import android.Manifest
 import android.graphics.Color
 import android.os.Bundle
 import android.view.MenuItem
 import android.view.MotionEvent
 import android.view.View
+import android.widget.Toast
 import androidx.activity.viewModels
 import androidx.appcompat.app.ActionBarDrawerToggle
 import androidx.appcompat.app.AppCompatActivity
@@ -31,14 +33,20 @@ import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.launch
+import pub.devrel.easypermissions.AppSettingsDialog
+import pub.devrel.easypermissions.EasyPermissions
 import javax.inject.Inject
 
 /**
  * Created On 24/07/2021
  * @author Mayur Gajra
  */
+
+private const val REQUEST_CODE_RECORD_AUDIO = 1
+
 @AndroidEntryPoint
-class DrawingActivity : AppCompatActivity(), LifecycleObserver {
+class DrawingActivity : AppCompatActivity(), LifecycleObserver,
+    EasyPermissions.PermissionCallbacks {
 
     private lateinit var binding: ActivityDrawingBinding
 
@@ -146,6 +154,43 @@ class DrawingActivity : AppCompatActivity(), LifecycleObserver {
     override fun onPause() {
         super.onPause()
         binding.rvChat.layoutManager?.onSaveInstanceState()
+    }
+
+    private fun hasRecordAudioPermissions() = EasyPermissions.hasPermissions(
+        this,
+        Manifest.permission.RECORD_AUDIO
+    )
+
+    private fun requestRecordAudioPermission() {
+        EasyPermissions.requestPermissions(
+            this,
+            getString(R.string.rationale_record_audio),
+            REQUEST_CODE_RECORD_AUDIO,
+            Manifest.permission.RECORD_AUDIO
+        )
+    }
+
+    override fun onRequestPermissionsResult(
+        requestCode: Int,
+        permissions: Array<out String>,
+        grantResults: IntArray
+    ) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults)
+        EasyPermissions.onRequestPermissionsResult(requestCode, permissions, grantResults, this)
+    }
+
+    override fun onPermissionsGranted(requestCode: Int, perms: MutableList<String>) {
+        if (requestCode == REQUEST_CODE_RECORD_AUDIO) {
+            Toast.makeText(this, R.string.speech_to_text_info, Toast.LENGTH_LONG).show()
+        }
+    }
+
+    override fun onPermissionsDenied(requestCode: Int, perms: MutableList<String>) {
+        if (requestCode == REQUEST_CODE_RECORD_AUDIO) {
+            if (EasyPermissions.somePermissionPermanentlyDenied(this, perms)) {
+                AppSettingsDialog.Builder(this).build().show()
+            }
+        }
     }
 
     private fun setColorGroupVisibility(isVisible: Boolean) {
@@ -446,7 +491,7 @@ class DrawingActivity : AppCompatActivity(), LifecycleObserver {
     }
 
     @OnLifecycleEvent(Lifecycle.Event.ON_STOP)
-    private fun onAppInBackground(){
+    private fun onAppInBackground() {
         viewModel.disconnect()
     }
 
@@ -456,6 +501,6 @@ class DrawingActivity : AppCompatActivity(), LifecycleObserver {
                 viewModel.disconnect()
                 finish()
             }
-        }.show(supportFragmentManager,null)
+        }.show(supportFragmentManager, null)
     }
 }
