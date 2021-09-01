@@ -1,27 +1,13 @@
 package com.mayurg.scribblearena.di
 
-import android.app.Application
 import android.content.Context
 import com.google.gson.Gson
 import com.mayurg.scribblearena.data.remote.api.SetupApi
-import com.mayurg.scribblearena.data.remote.ws.CustomMessageAdapter
-import com.mayurg.scribblearena.data.remote.ws.DrawingApi
-import com.mayurg.scribblearena.data.remote.ws.FlowStreamAdapter
 import com.mayurg.scribblearena.repository.DefaultSetupRepository
 import com.mayurg.scribblearena.repository.SetupRepository
-import com.mayurg.scribblearena.util.Constants.HTTP_BASE_URL
-import com.mayurg.scribblearena.util.Constants.HTTP_BASE_URL_LOCAL
-import com.mayurg.scribblearena.util.Constants.RECONNECT_INTERVAL
-import com.mayurg.scribblearena.util.Constants.USE_LOCALHOST
-import com.mayurg.scribblearena.util.Constants.WS_BASE_URL
-import com.mayurg.scribblearena.util.Constants.WS_BASE_URL_LOCALHOST
 import com.mayurg.scribblearena.util.DispatcherProvider
 import com.mayurg.scribblearena.util.clientId
 import com.mayurg.scribblearena.util.dataStore
-import com.tinder.scarlet.Scarlet
-import com.tinder.scarlet.lifecycle.android.AndroidLifecycle
-import com.tinder.scarlet.retry.LinearBackoffStrategy
-import com.tinder.scarlet.websocket.okhttp.newWebSocketFactory
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -32,8 +18,6 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.runBlocking
 import okhttp3.OkHttpClient
 import okhttp3.logging.HttpLoggingInterceptor
-import retrofit2.Retrofit
-import retrofit2.converter.gson.GsonConverterFactory
 import javax.inject.Singleton
 
 /**
@@ -44,12 +28,7 @@ import javax.inject.Singleton
 @InstallIn(SingletonComponent::class)
 object AppModule {
 
-    @Singleton
-    @Provides
-    fun provideSetupRepository(
-        setupApi: SetupApi,
-        @ApplicationContext context: Context
-    ): SetupRepository = DefaultSetupRepository(setupApi, context)
+
 
     @Singleton
     @Provides
@@ -78,36 +57,7 @@ object AppModule {
         return runBlocking { context.dataStore.clientId() }
     }
 
-    @Singleton
-    @Provides
-    fun provideDrawingApi(
-        app: Application,
-        okkHttpClient: OkHttpClient,
-        gson: Gson
-    ): DrawingApi {
-        return Scarlet.Builder()
-            .backoffStrategy(LinearBackoffStrategy(RECONNECT_INTERVAL))
-            .lifecycle(AndroidLifecycle.ofApplicationForeground(app))
-            .webSocketFactory(
-                okkHttpClient.newWebSocketFactory(
-                    if (USE_LOCALHOST) WS_BASE_URL_LOCALHOST else WS_BASE_URL
-                )
-            ).addStreamAdapterFactory(FlowStreamAdapter.Factory)
-            .addMessageAdapterFactory(CustomMessageAdapter.Factory(gson))
-            .build()
-            .create()
-    }
 
-    @Singleton
-    @Provides
-    fun provideSetupApi(okkHttpClient: OkHttpClient): SetupApi {
-        return Retrofit.Builder()
-            .baseUrl(if (USE_LOCALHOST) HTTP_BASE_URL_LOCAL else HTTP_BASE_URL)
-            .addConverterFactory(GsonConverterFactory.create())
-            .client(okkHttpClient)
-            .build()
-            .create(SetupApi::class.java)
-    }
 
     @Singleton
     @Provides
