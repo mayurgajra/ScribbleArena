@@ -7,12 +7,12 @@ package com.mayurg.scribblearena.util
 object Constants {
 
 
-    const val USE_LOCALHOST = true
+    const val USE_LOCALHOST = false
 
-    const val HTTP_BASE_URL = ""
+    const val HTTP_BASE_URL = "https://limitless-sierra-65768.herokuapp.com/"
     const val HTTP_BASE_URL_LOCAL = "http://192.168.0.3:8080/"
 
-    const val WS_BASE_URL = ""
+    const val WS_BASE_URL = "https://limitless-sierra-65768.herokuapp.com/ws/draw"
     const val WS_BASE_URL_LOCALHOST = "http://192.168.0.3:8080/ws/draw"
 
     const val MIN_USERNAME_LENGTH = 4
