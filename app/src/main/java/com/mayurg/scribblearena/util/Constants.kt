@@ -42,4 +42,6 @@ object Constants {
 
     const val RECONNECT_INTERVAL = 3000L
 
+    const val MAX_WORD_VOICE_GUESS_AMOUNT = 3
+
 }
