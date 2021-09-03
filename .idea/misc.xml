@@ -3,9 +3,27 @@
   <component name="DesignSurface">
     <option name="filePathToZoomLevelMap">
       <map>
+        <entry key="..\:/Users/MAYUR/Workspace/WS_Personal/ScribbleArena/app/src/main/res/drawable/ic_appicon.xml" value="0.2203125" />
+        <entry key="..\:/Users/MAYUR/Workspace/WS_Personal/ScribbleArena/app/src/main/res/drawable/ic_appicon_v2.xml" value="0.2203125" />
+        <entry key="..\:/Users/MAYUR/Workspace/WS_Personal/ScribbleArena/app/src/main/res/drawable/ic_doodle_search.xml" value="0.2203125" />
+        <entry key="..\:/Users/MAYUR/Workspace/WS_Personal/ScribbleArena/app/src/main/res/drawable/ic_doodle_wifi.xml" value="0.2203125" />
+        <entry key="..\:/Users/MAYUR/Workspace/WS_Personal/ScribbleArena/app/src/main/res/drawable/ic_doodle_world.xml" value="0.2203125" />
+        <entry key="..\:/Users/MAYUR/Workspace/WS_Personal/ScribbleArena/app/src/main/res/drawable/ic_eraser.xml" value="0.2203125" />
         <entry key="..\:/Users/MAYUR/Workspace/WS_Personal/ScribbleArena/app/src/main/res/drawable/ic_eraser_checked.xml" value="0.2203125" />
         <entry key="..\:/Users/MAYUR/Workspace/WS_Personal/ScribbleArena/app/src/main/res/drawable/ic_eraser_unchecked.xml" value="0.2203125" />
+        <entry key="..\:/Users/MAYUR/Workspace/WS_Personal/ScribbleArena/app/src/main/res/drawable/ic_happy_monkey.xml" value="0.2203125" />
+        <entry key="..\:/Users/MAYUR/Workspace/WS_Personal/ScribbleArena/app/src/main/res/drawable/ic_mic.xml" value="0.2203125" />
+        <entry key="..\:/Users/MAYUR/Workspace/WS_Personal/ScribbleArena/app/src/main/res/drawable/ic_mic_off.xml" value="0.2203125" />
+        <entry key="..\:/Users/MAYUR/Workspace/WS_Personal/ScribbleArena/app/src/main/res/drawable/ic_pencil.xml" value="0.2203125" />
+        <entry key="..\:/Users/MAYUR/Workspace/WS_Personal/ScribbleArena/app/src/main/res/drawable/ic_person.xml" value="0.2203125" />
+        <entry key="..\:/Users/MAYUR/Workspace/WS_Personal/ScribbleArena/app/src/main/res/drawable/ic_refresh.xml" value="0.2203125" />
+        <entry key="..\:/Users/MAYUR/Workspace/WS_Personal/ScribbleArena/app/src/main/res/drawable/ic_round_clear_24.xml" value="0.2203125" />
+        <entry key="..\:/Users/MAYUR/Workspace/WS_Personal/ScribbleArena/app/src/main/res/drawable/ic_sad_monkey.xml" value="0.2203125" />
+        <entry key="..\:/Users/MAYUR/Workspace/WS_Personal/ScribbleArena/app/src/main/res/drawable/ic_scribble_man.xml" value="0.2203125" />
         <entry key="..\:/Users/MAYUR/Workspace/WS_Personal/ScribbleArena/app/src/main/res/layout/activity_drawing.xml" value="0.20416666666666666" />
+        <entry key="..\:/Users/MAYUR/Workspace/WS_Personal/ScribbleArena/app/src/main/res/layout/activity_setup.xml" value="0.20416666666666666" />
+        <entry key="..\:/Users/MAYUR/Workspace/WS_Personal/ScribbleArena/app/src/main/res/layout/fragment_username.xml" value="0.20416666666666666" />
+        <entry key="..\:/Users/MAYUR/Workspace/WS_Personal/ScribbleArena/app/src/main/res/mipmap-anydpi-v26/ic_launcher.xml" value="0.2203125" />
       </map>
     </option>
   </component>
