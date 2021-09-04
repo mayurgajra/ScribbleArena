@@ -1,8 +1,8 @@
 package com.mayurg.scribblearena.ui.setup
 
-import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
-import com.mayurg.scribblearena.R
+import androidx.appcompat.app.AppCompatActivity
+import androidx.appcompat.app.AppCompatDelegate
 import com.mayurg.scribblearena.databinding.ActivitySetupBinding
 import dagger.hilt.android.AndroidEntryPoint
 
@@ -13,6 +13,7 @@ class SetupActivity : AppCompatActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_NO);
         binding = ActivitySetupBinding.inflate(layoutInflater)
         setContentView(binding.root)
     }
