@@ -18,7 +18,7 @@
     </style>
 
     <style name="DialogStyle" parent="Theme.MaterialComponents.Dialog.Alert">
-        <item name="fontFamily">@font/handwriting</item>
+        <item name="fontFamily">@font/sansation</item>
         <item name="backgroundTint">@color/white</item>
         <item name="android:textColor">@color/black</item>
     </style>
@@ -43,23 +43,30 @@
         <item name="boxStrokeWidth">2dp</item>
     </style>
 
+    <style name="DropDownTextInputStyle" parent="Widget.MaterialComponents.TextInputLayout.OutlinedBox.Dense">
+        <item name="hintTextColor">@color/lightgrey</item>
+        <item name="android:textColor">@color/black</item>
+        <item name="android:textSize">20sp</item>
+        <item name="fontFamily">@font/sansation</item>
+    </style>
+
     <style name="TextInputStyle" parent="Widget.MaterialComponents.TextInputLayout.OutlinedBox.Dense">
         <item name="hintTextColor">@color/lightgrey</item>
         <item name="android:textColor">@color/black</item>
-        <item name="android:textSize">28sp</item>
-        <item name="fontFamily">@font/handwriting</item>
+        <item name="android:textSize">24sp</item>
+        <item name="fontFamily">@font/sansation</item>
     </style>
 
     <style name="ButtonStyle" parent="Widget.MaterialComponents.Button.OutlinedButton">
         <item name="android:textSize">24sp</item>
-        <item name="fontFamily">@font/handwriting</item>
+        <item name="fontFamily">@font/sansation</item>
         <item name="strokeWidth">2dp</item>
         <item name="strokeColor">@color/black</item>
     </style>
 
     <style name="TextViewStyle" parent="Widget.MaterialComponents.TextView">
-        <item name="fontFamily">@font/handwriting</item>
-        <item name="android:textSize">28sp</item>
+        <item name="fontFamily">@font/sansation</item>
+        <item name="android:textSize">24sp</item>
         <item name="android:textColor">@color/black</item>
     </style>
 

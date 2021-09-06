@@ -118,6 +118,8 @@ class SelectRoomFragment : Fragment(R.layout.fragment_select_room) {
             when (event) {
                 is SelectRoomViewModel.SetupEvent.GetRoomLoadingEvent -> {
                     binding.roomsProgressBar.isVisible = true
+                    binding.tvNoRoomsFound.isVisible = false
+                    binding.ivNoRoomsFound.isVisible = false
                 }
                 is SelectRoomViewModel.SetupEvent.GetRoomEvent -> {
                     binding.roomsProgressBar.isVisible = false
