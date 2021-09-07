@@ -87,6 +87,11 @@ class SelectRoomFragment : Fragment(R.layout.fragment_select_room) {
         viewModel.setupEvent.collect { event ->
             when (event) {
                 is SelectRoomViewModel.SetupEvent.JoinRoomEvent -> {
+                    binding.apply {
+                        roomsProgressBar.isVisible = false
+                        tvNoRoomsFound.isVisible = false
+                        ivNoRoomsFound.isVisible = false
+                    }
                     findNavController().navigateSafely(
                         R.id.action_selectRoomFragment_to_drawingActivity,
                         args = Bundle().apply {
