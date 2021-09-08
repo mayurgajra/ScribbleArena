@@ -506,7 +506,7 @@ class DrawingActivity : AppCompatActivity(), LifecycleObserver,
                 }
 
                 is DrawingViewModel.SocketEvent.ChosenWordEvent -> {
-                    binding.tvChooseWord.text = event.data.chosenWord
+                    binding.tvCurWord.text = event.data.chosenWord
                     binding.ibUndo.isEnabled = false
                 }
 
