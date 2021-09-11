@@ -7,27 +7,40 @@ import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.RecyclerView
 import com.mayurg.scribblearena.data.remote.ws.models.PlayerData
 import com.mayurg.scribblearena.databinding.ItemPlayerBinding
+import com.mayurg.scribblearena.ui.drawing.DrawingActivity
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import javax.inject.Inject
 
 /**
+ * Adapter class for displaying players in [DrawingActivity] drawer on the left.
+ *
+ * In shows current points & ranking of the players.
+ * Also, An icon to indicate which player is drawing
+ *
  * Created On 27/08/2021
  * @author Mayur Gajra
  */
 class PlayerAdapter @Inject constructor() :
     RecyclerView.Adapter<PlayerAdapter.PlayerViewHolder>() {
 
+    /**
+     * View holder for displaying player details like name,points etc.
+     */
     class PlayerViewHolder(val binding: ItemPlayerBinding) : RecyclerView.ViewHolder(binding.root)
 
-    suspend fun updateDataset(newDataset: List<PlayerData>) = withContext(Dispatchers.Default){
-        val diff = DiffUtil.calculateDiff(object : DiffUtil.Callback(){
+    /**
+     * This helper function helps in finding the difference in current list
+     * & newly received list so we don't update the whole data
+     */
+    suspend fun updateDataset(newDataset: List<PlayerData>) = withContext(Dispatchers.Default) {
+        val diff = DiffUtil.calculateDiff(object : DiffUtil.Callback() {
             override fun getOldListSize(): Int {
                 return players.size
             }
 
             override fun getNewListSize(): Int {
-               return newDataset.size
+                return newDataset.size
             }
 
             override fun areItemsTheSame(oldItemPosition: Int, newItemPosition: Int): Boolean {
@@ -39,12 +52,15 @@ class PlayerAdapter @Inject constructor() :
             }
         })
 
-        withContext(Dispatchers.Main){
+        withContext(Dispatchers.Main) {
             players = newDataset
             diff.dispatchUpdatesTo(this@PlayerAdapter)
         }
     }
 
+    /**
+     * Adapter list containing players data in the current room
+     */
     var players = listOf<PlayerData>()
         private set
 

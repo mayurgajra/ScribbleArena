@@ -11,10 +11,12 @@ import com.mayurg.scribblearena.data.remote.ws.models.ChatMessage
 import com.mayurg.scribblearena.databinding.ItemAnnouncementBinding
 import com.mayurg.scribblearena.databinding.ItemChatMessageIncomingBinding
 import com.mayurg.scribblearena.databinding.ItemChatMessageOutgoingBinding
+import com.mayurg.scribblearena.ui.drawing.DrawingActivity
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import java.text.SimpleDateFormat
 import java.util.*
+
 
 /**
  * Created On 19/08/2021
@@ -25,21 +27,47 @@ private const val VIEW_TYPE_INCOMING_MESSAGE = 0
 private const val VIEW_TYPE_OUTGOING_MESSAGE = 1
 private const val VIEW_TYPE_ANNOUNCEMENT = 2
 
+/**
+ * Adapter for displaying the chat messages & announcements inside the [DrawingActivity]
+ *
+ * @param username is the currently loggedIn/selected user name so we can differentiate
+ * between [VIEW_TYPE_OUTGOING_MESSAGE] & [VIEW_TYPE_INCOMING_MESSAGE]
+ */
 class ChatMessageAdapter(
     private val username: String
 ) : RecyclerView.Adapter<RecyclerView.ViewHolder>() {
 
+    /**
+     * View holder for displaying messages sent by other users
+     */
     class IncomingChatMessageViewHolder(val binding: ItemChatMessageIncomingBinding) :
         RecyclerView.ViewHolder(binding.root)
 
+    /**
+     * View holder for displaying messages sent currently logged in user
+     */
     class OutGoingChatMessageViewHolder(val binding: ItemChatMessageOutgoingBinding) :
         RecyclerView.ViewHolder(binding.root)
 
+    /**
+     * View holder for displaying announcements
+     * such as:
+     *          Player has joined
+     *          Player has left
+     */
     class AnnouncementViewHolder(val binding: ItemAnnouncementBinding) :
         RecyclerView.ViewHolder(binding.root)
 
+    /**
+     * Adapter list containing various subclasses of [BaseModel]
+     */
     var chatObjects = listOf<BaseModel>()
 
+
+    /**
+     * This helper function helps in finding the difference in current list
+     * & newly received list so we don't update the whole data
+     */
     suspend fun updateDataset(newDataset: List<BaseModel>) = withContext(Dispatchers.Default) {
         val diff = DiffUtil.calculateDiff(object : DiffUtil.Callback() {
             override fun getOldListSize(): Int {

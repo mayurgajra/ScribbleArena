@@ -11,14 +11,23 @@ import kotlinx.coroutines.withContext
 import javax.inject.Inject
 
 /**
+ * Adapter class for displaying rooms list available on server created by current user or players
+ *
  * Created On 31/07/2021
  * @author Mayur Gajra
  */
 class RoomAdapter @Inject constructor() :
     RecyclerView.Adapter<RoomAdapter.RoomViewHolder>() {
 
+    /**
+     * View holder for displaying room list item like name & current player count
+     */
     class RoomViewHolder(val binding: ItemRoomBinding) : RecyclerView.ViewHolder(binding.root)
 
+    /**
+     * This helper function helps in finding the difference in current list
+     * & newly received list so we don't update the whole data
+     */
     suspend fun updateDataset(newDataset: List<Room>) = withContext(Dispatchers.Default){
         val diff = DiffUtil.calculateDiff(object : DiffUtil.Callback(){
             override fun getOldListSize(): Int {
@@ -44,6 +53,9 @@ class RoomAdapter @Inject constructor() :
         }
     }
 
+    /**
+     * Adapter list containing rooms list available on server
+     */
     var rooms = listOf<Room>()
         private set
 
@@ -78,6 +90,12 @@ class RoomAdapter @Inject constructor() :
 
     private var onRoomClickListener: ((Room) -> Unit)? = null
 
+    /**
+     * Setter for [onRoomClickListener]
+     *
+     * Called when room item is clicked in the list & [Room] instance is passed
+     * which can be then used for joining or other operations.
+     */
     fun setOnRoomClickListener(listener: ((Room) -> Unit)) {
         onRoomClickListener = listener
     }
