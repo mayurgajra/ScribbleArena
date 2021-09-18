@@ -19,15 +19,22 @@ import com.mayurg.scribblearena.util.Constants.TYPE_PING
 import com.mayurg.scribblearena.util.Constants.TYPE_PLAYERS_LIST
 import com.tinder.scarlet.Message
 import com.tinder.scarlet.MessageAdapter
+import com.tinder.scarlet.Scarlet
 import java.lang.reflect.Type
 
 /**
+ * Message converter adapter & factory for [Scarlet] instance
+ *
+ * It converts message to our data class & vice-versa.
+ *
+ * @param gson is needed for converting string to kotlin data class & vice-versa
+ *
  * Created On 11/08/2021
  * @author Mayur Gajra
  */
 @Suppress("UNCHECKED_CAST")
 class CustomMessageAdapter<T> private constructor(
-    val gson: Gson
+    private val gson: Gson
 ) : MessageAdapter<T> {
     override fun fromMessage(message: Message): T {
         val stringValue = when (message) {
