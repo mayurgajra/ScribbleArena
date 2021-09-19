@@ -2,9 +2,6 @@ package com.mayurg.scribblearena.di
 
 import android.content.Context
 import com.google.gson.Gson
-import com.mayurg.scribblearena.data.remote.api.SetupApi
-import com.mayurg.scribblearena.repository.DefaultSetupRepository
-import com.mayurg.scribblearena.repository.SetupRepository
 import com.mayurg.scribblearena.util.DispatcherProvider
 import com.mayurg.scribblearena.util.clientId
 import com.mayurg.scribblearena.util.dataStore
@@ -21,6 +18,8 @@ import okhttp3.logging.HttpLoggingInterceptor
 import javax.inject.Singleton
 
 /**
+ * Dependency module which contains dependencies with the lifespan of an Application
+ *
  * Created On 23/07/2021
  * @author Mayur Gajra
  */

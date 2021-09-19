@@ -1,5 +1,6 @@
 package com.mayurg.scribblearena.data.remote.ws
 
+import com.tinder.scarlet.Scarlet
 import com.tinder.scarlet.Stream
 import com.tinder.scarlet.StreamAdapter
 import com.tinder.scarlet.utils.getRawType
@@ -10,6 +11,9 @@ import kotlinx.coroutines.flow.callbackFlow
 import java.lang.reflect.Type
 
 /**
+ * A [StreamAdapter] Factory used to attach in [Scarlet] instance for
+ * supporting service method return types other than [Stream].
+ *
  * Created On 11/08/2021
  * @author Mayur Gajra
  */

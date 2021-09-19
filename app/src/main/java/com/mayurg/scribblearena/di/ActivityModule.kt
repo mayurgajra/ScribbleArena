@@ -25,6 +25,8 @@ import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
 
 /**
+ * Dependency module which contains dependencies with the lifespan of an Activity
+ *
  * Created On 01/09/2021
  * @author Mayur Gajra
  */
