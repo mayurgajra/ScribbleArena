@@ -43,37 +43,83 @@ import pub.devrel.easypermissions.EasyPermissions
 import java.util.*
 import javax.inject.Inject
 
+
 /**
+ * Request code for asking permission to record audio.
+ */
+private const val REQUEST_CODE_RECORD_AUDIO = 1
+
+/**
+ * Main drawing game activity.
+ *
  * Created On 24/07/2021
  * @author Mayur Gajra
  */
-
-private const val REQUEST_CODE_RECORD_AUDIO = 1
-
 @AndroidEntryPoint
 class DrawingActivity : AppCompatActivity(), LifecycleObserver,
     EasyPermissions.PermissionCallbacks, RecognitionListener {
 
+    /**
+     * [binding] holds the reference to the views of [DrawingActivity]
+     */
     private lateinit var binding: ActivityDrawingBinding
 
+    /**
+     * [viewModel] is used to perform business logic. e.g sending drawing data,chat messages
+     */
     private val viewModel: DrawingViewModel by viewModels()
 
+    /**
+     * [args] is the navigation arguments passed from calling fragment such as "username","roomName"
+     */
     private val args: DrawingActivityArgs by navArgs()
 
+    /**
+     * [clientId] is just randomUUID() saved in preferences to identify user re-joining
+     */
     @Inject
     lateinit var clientId: String
 
+    /**
+     * [toggle] is used to tie-down/sync the drawer & icon with open/close status of the
+     * drawer
+     */
     private lateinit var toggle: ActionBarDrawerToggle
+
+    /**
+     * [rvPlayers] a list of players inside the drawer view
+     */
     private lateinit var rvPlayers: RecyclerView
+
+    /**
+     * Adapter for displaying the chat messages & announcements
+     */
     private lateinit var chatMessageAdapter: ChatMessageAdapter
 
+    /**
+     * [speechRecognizer] to get access to the speech recognizer service
+     */
     private lateinit var speechRecognizer: SpeechRecognizer
+
+    /**
+     * [speechIntent] an intent to pass to [speechRecognizer] to start listening for speech
+     */
     private lateinit var speechIntent: Intent
 
+    /**
+     * Adapter class for displaying players in drawer
+     */
     @Inject
     lateinit var playerAdapter: PlayerAdapter
 
+    /**
+     * [updateChatJob] a job to update [chatMessageAdapter] diff util calculation in bg.
+     */
     private var updateChatJob: Job? = null
+
+    /**
+     * [updatePlayersJob] a job to update [playerAdapter] diff util calculation in bg.
+     */
     private var updatePlayersJob: Job? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -85,42 +131,21 @@ class DrawingActivity : AppCompatActivity(), LifecycleObserver,
         listenToConnectionEvent()
         listenToSocketEvents()
         setupRecyclerView()
+        setupDrawer()
+        setupArgs()
+        setupStateRestorationPolicyForAdapter()
+        setupPlayersRecyclerView()
+        setupSpeechRecognizer()
+        setViewClickListeners()
+    }
 
-        toggle = ActionBarDrawerToggle(this, binding.root, R.string.open, R.string.close)
-        toggle.syncState()
-
-        binding.drawingView.roomName = args.roomName
-
-        chatMessageAdapter.stateRestorationPolicy =
-            RecyclerView.Adapter.StateRestorationPolicy.PREVENT_WHEN_EMPTY
-
-        val header = layoutInflater.inflate(R.layout.nav_drawer_header, binding.navView)
-        rvPlayers = header.findViewById(R.id.rvPlayers)
-        binding.root.setDrawerLockMode(DrawerLayout.LOCK_MODE_LOCKED_CLOSED)
-
-        rvPlayers.apply {
-            adapter = playerAdapter
-            layoutManager = LinearLayoutManager(this@DrawingActivity)
-        }
-
-        binding.ibPlayers.setOnClickListener {
-            binding.root.setDrawerLockMode(DrawerLayout.LOCK_MODE_UNLOCKED)
-            binding.root.openDrawer(GravityCompat.START)
-        }
-
-        binding.root.addDrawerListener(object : DrawerLayout.DrawerListener {
-            override fun onDrawerSlide(drawerView: View, slideOffset: Float) = Unit
-
-            override fun onDrawerOpened(drawerView: View) = Unit
-
-            override fun onDrawerClosed(drawerView: View) {
-                binding.root.setDrawerLockMode(DrawerLayout.LOCK_MODE_LOCKED_CLOSED)
-            }
-
-            override fun onDrawerStateChanged(newState: Int) = Unit
-
-        })
-
+    /**
+     * Initialize [SpeechRecognizer] & create [speechIntent] to launch the service
+     * when user clicks on speech button.
+     *
+     * If speech recognition is available then set listeners
+     */
+    private fun setupSpeechRecognizer() {
         speechRecognizer = SpeechRecognizer.createSpeechRecognizer(this)
         speechIntent = Intent(RecognizerIntent.ACTION_RECOGNIZE_SPEECH).apply {
             putExtra(
@@ -133,6 +158,32 @@ class DrawingActivity : AppCompatActivity(), LifecycleObserver,
         }
         if (SpeechRecognizer.isRecognitionAvailable(this)) {
             speechRecognizer.setRecognitionListener(this)
+        }
+    }
+
+    /**
+     * Sets up the restoration policy for [chatMessageAdapter] to restore scroll position
+     * of chat recycler view after config change (e.g. after Activity rotation)
+     */
+    private fun setupStateRestorationPolicyForAdapter() {
+        chatMessageAdapter.stateRestorationPolicy =
+            RecyclerView.Adapter.StateRestorationPolicy.PREVENT_WHEN_EMPTY
+    }
+
+    /**
+     * Setup the arguments received from navigation [args] such as room name
+     */
+    private fun setupArgs() {
+        binding.drawingView.roomName = args.roomName
+    }
+
+    /**
+     * Setup click event listeners
+     */
+    private fun setViewClickListeners() {
+        binding.ibPlayers.setOnClickListener {
+            binding.root.setDrawerLockMode(DrawerLayout.LOCK_MODE_UNLOCKED)
+            binding.root.openDrawer(GravityCompat.START)
         }
 
         binding.ibClearText.setOnClickListener {
@@ -181,19 +232,62 @@ class DrawingActivity : AppCompatActivity(), LifecycleObserver,
                 viewModel.sendBaseModel(it)
             }
         }
-
     }
 
+    /**
+     * setup recyclerview to display list of players in the room inside left drawer
+     */
+    private fun setupPlayersRecyclerView() {
+        val header = layoutInflater.inflate(R.layout.nav_drawer_header, binding.navView)
+        rvPlayers = header.findViewById(R.id.rvPlayers)
+
+        rvPlayers.apply {
+            adapter = playerAdapter
+            layoutManager = LinearLayoutManager(this@DrawingActivity)
+        }
+    }
+
+    /**
+     * setup drawer & [toggle] related things. such as toggle sync state & listeners for drawer
+     */
+    private fun setupDrawer() {
+        toggle = ActionBarDrawerToggle(this, binding.root, R.string.open, R.string.close)
+        toggle.syncState()
+        binding.root.addDrawerListener(object : DrawerLayout.DrawerListener {
+            override fun onDrawerSlide(drawerView: View, slideOffset: Float) = Unit
+
+            override fun onDrawerOpened(drawerView: View) = Unit
+
+            override fun onDrawerClosed(drawerView: View) {
+                binding.root.setDrawerLockMode(DrawerLayout.LOCK_MODE_LOCKED_CLOSED)
+            }
+
+            override fun onDrawerStateChanged(newState: Int) = Unit
+
+        })
+        binding.root.setDrawerLockMode(DrawerLayout.LOCK_MODE_LOCKED_CLOSED)
+    }
+
+    /**
+     * onPause call the onSaveInstanceState of chat recycler view so that it can be
+     * restored during recreation
+     */
     override fun onPause() {
         super.onPause()
         binding.rvChat.layoutManager?.onSaveInstanceState()
     }
 
+    /**
+     * Check if app has the permission of recording the audio for speech guessing functionality
+     */
     private fun hasRecordAudioPermissions() = EasyPermissions.hasPermissions(
         this,
         Manifest.permission.RECORD_AUDIO
     )
 
+    /**
+     * If app doesn't have the permission to record audio then we request for it using [EasyPermissions]
+     */
     private fun requestRecordAudioPermission() {
         EasyPermissions.requestPermissions(
             this,
@@ -203,6 +297,10 @@ class DrawingActivity : AppCompatActivity(), LifecycleObserver,
         )
     }
 
+    /**
+     * Called when permission are either granted or denied by the user. From this we pass the result
+     * to [EasyPermissions] to handle
+     */
     override fun onRequestPermissionsResult(
         requestCode: Int,
         permissions: Array<out String>,
@@ -212,12 +310,20 @@ class DrawingActivity : AppCompatActivity(), LifecycleObserver,
         EasyPermissions.onRequestPermissionsResult(requestCode, permissions, grantResults, this)
     }
 
+    /**
+     * When permission to record audio is granted. Display a toast to indicate that
+     * how to proceed with using speech guessing functionality
+     */
     override fun onPermissionsGranted(requestCode: Int, perms: MutableList<String>) {
         if (requestCode == REQUEST_CODE_RECORD_AUDIO) {
             Toast.makeText(this, R.string.speech_to_text_info, Toast.LENGTH_LONG).show()
         }
     }
 
+    /**
+     * When permission are denied permanently display an app settings dialog
+     * to user to allow permissions from system settings.
+     */
     override fun onPermissionsDenied(requestCode: Int, perms: MutableList<String>) {
         if (requestCode == REQUEST_CODE_RECORD_AUDIO) {
             if (EasyPermissions.somePermissionPermanentlyDenied(this, perms)) {
@@ -226,6 +332,9 @@ class DrawingActivity : AppCompatActivity(), LifecycleObserver,
         }
     }
 
+    /**
+     * Toggle the speech icon according to the [isEnabled] status
+     */
     private fun setSpeechRecognitionEnabled(isEnabled: Boolean) {
         if (isEnabled) {
             binding.ibMic.setImageResource(R.drawable.ic_mic)
@@ -237,10 +346,13 @@ class DrawingActivity : AppCompatActivity(), LifecycleObserver,
         }
     }
 
+    /**
+     * When the [speechRecognizer] is ready for to accept speech,Set hint showing that listening has
+     * started
+     */
     override fun onReadyForSpeech(params: Bundle?) {
         binding.etMessage.text?.clear()
         binding.etMessage.hint = getString(R.string.listening)
-
     }
 
     override fun onBeginningOfSpeech() = Unit
@@ -249,12 +361,20 @@ class DrawingActivity : AppCompatActivity(), LifecycleObserver,
 
     override fun onBufferReceived(buffer: ByteArray?) = Unit
 
+    /**
+     * When speech ends notify that change to [viewModel] & also change the icons
+     */
     override fun onEndOfSpeech() {
         viewModel.stopListening()
     }
 
     override fun onError(error: Int) = Unit
 
+    /**
+     * When results from [speechRecognizer] arrive. Joins them by a space & set it
+     * to message input edit-texts & also notify that change to [viewModel]
+     * & also change the icons.
+     */
     override fun onResults(results: Bundle?) {
         val strings = results?.getStringArrayList(SpeechRecognizer.RESULTS_RECOGNITION)
         val guessedWords = strings?.joinToString { " " }
@@ -269,11 +389,25 @@ class DrawingActivity : AppCompatActivity(), LifecycleObserver,
 
     override fun onEvent(eventType: Int, params: Bundle?) = Unit
 
+    /**
+     * Change the visibility of color selection palette on top of drawing view.
+     * e.g It should be visible when logged in user is the drawing player.
+     *
+     * @param isVisible a boolean flag to indicate whether color palette & undo image button should be
+     * visible or not
+     */
     private fun setColorGroupVisibility(isVisible: Boolean) {
         binding.colorGroup.isVisible = isVisible
         binding.ibUndo.isVisible = isVisible
     }
 
+    /**
+     * Change the visibility of message input edit-text,clean button & send message button.
+     * e.g It should be visible if logged in user is the guessing player
+     *
+     * @param isVisible a boolean flag to indicate whether edit-text,clean button
+     * & send message button should be visible or not.
+     */
     private fun setMessageInputVisibility(isVisible: Boolean) {
         binding.apply {
             tilMessage.isVisible = isVisible
@@ -282,6 +416,11 @@ class DrawingActivity : AppCompatActivity(), LifecycleObserver,
         }
     }
 
+    /**
+     * called when a color is selected from the color palette.
+     * it passes that selected color to the drawingView & sets the default thickness to
+     * [Constants.DEFAULT_PAINT_THICKNESS]
+     */
     private fun selectColor(color: Int) {
         binding.drawingView.setColor(color)
         binding.drawingView.setThickness(Constants.DEFAULT_PAINT_THICKNESS)
@@ -289,7 +428,6 @@ class DrawingActivity : AppCompatActivity(), LifecycleObserver,
 
 
     private fun subscribeToUiStateUpdates() {
-
         lifecycleScope.launchWhenStarted {
             viewModel.speechToTextEnabled.collect { isEnabled ->
                 if (isEnabled && !SpeechRecognizer.isRecognitionAvailable(this@DrawingActivity)) {
@@ -304,6 +442,7 @@ class DrawingActivity : AppCompatActivity(), LifecycleObserver,
                 }
             }
         }
+
         lifecycleScope.launchWhenStarted {
             viewModel.pathData.collect { pathData ->
                 binding.drawingView.setPaths(pathData)
