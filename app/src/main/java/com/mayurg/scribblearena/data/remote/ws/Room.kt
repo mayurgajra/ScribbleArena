@@ -16,10 +16,29 @@ data class Room(
     val playerCount: Int = 1
 ) {
     enum class Phase {
+        /**
+         * When  at-least two players are not active/connected
+         */
         WAITING_FOR_PLAYERS,
+
+        /**
+         * When two player are active & waiting for timer to finish
+         */
         WAITING_FOR_START,
+
+        /**
+         * When all players have had their drawing change it goes back to starting round
+         */
         NEW_ROUND,
+
+        /**
+         * When game is currently running
+         */
         GAME_RUNNING,
+
+        /**
+         * Display the current word after guessing time is over to show what an actual word was
+         */
         SHOW_WORD
     }
 }

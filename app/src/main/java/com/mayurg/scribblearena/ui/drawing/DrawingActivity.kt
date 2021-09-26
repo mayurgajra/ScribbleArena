@@ -427,7 +427,14 @@ class DrawingActivity : AppCompatActivity(), LifecycleObserver,
     }
 
 
+    /**
+     * subscribe to UI state updates sent from [viewModel] & update the UI accordingly
+     */
     private fun subscribeToUiStateUpdates() {
+        /**
+         * Listen to updates of speech to text boolean & update the icon based on that or
+         * show toast if [SpeechRecognizer] service is not available
+         */
         lifecycleScope.launchWhenStarted {
             viewModel.speechToTextEnabled.collect { isEnabled ->
                 if (isEnabled && !SpeechRecognizer.isRecognitionAvailable(this@DrawingActivity)) {
@@ -443,12 +450,19 @@ class DrawingActivity : AppCompatActivity(), LifecycleObserver,
             }
         }
 
+        /**
+         * Listen to path that is being drawn & set to the drawing view.
+         * Also, used to draw the whole path if user joined after game started
+         */
         lifecycleScope.launchWhenStarted {
             viewModel.pathData.collect { pathData ->
                 binding.drawingView.setPaths(pathData)
             }
         }
 
+        /**
+         * Listen to chat messages received in the playing room & update the [chatMessageAdapter]
+         */
         lifecycleScope.launchWhenStarted {
             viewModel.chat.collect { chat ->
                 if (chatMessageAdapter.chatObjects.isEmpty()) {
@@ -457,6 +471,11 @@ class DrawingActivity : AppCompatActivity(), LifecycleObserver,
             }
         }
 
+        /**
+         * Listen to new words updates when the game state changes
+         * to choose word for the next round.
+         * Show 3 words to choose from.
+         */
         lifecycleScope.launchWhenStarted {
             viewModel.newWords.collect {
                 val newWords = it.newWords
@@ -485,6 +504,9 @@ class DrawingActivity : AppCompatActivity(), LifecycleObserver,
             }
         }
 
+        /**
+         * Listen to updates of current select color & update [selectColor]
+         */
         lifecycleScope.launchWhenStarted {
             viewModel.selectedColorButtonId.collect { id ->
                 binding.colorGroup.check(id)
@@ -508,6 +530,14 @@ class DrawingActivity : AppCompatActivity(), LifecycleObserver,
             }
         }
 
+        /**
+         * Listen to game state updates & update UI based on whether the current logged in user
+         * is drawing.
+         *
+         * 1) Display the currently select word
+         * 2) Show the color palette, undo button & enable the drawing view only if logged in user is drawing
+         * 3) Show input edit text & mic only  logged in user is guessing
+         */
         lifecycleScope.launchWhenStarted {
             viewModel.gameState.collect { gameState ->
                 binding.apply {
@@ -523,12 +553,21 @@ class DrawingActivity : AppCompatActivity(), LifecycleObserver,
             }
         }
 
+        /**
+         * Listen to updates of player in the playing room.
+         * Called when players join or leave room.
+         * Update the list of players in left side drawer
+         */
         lifecycleScope.launchWhenStarted {
             viewModel.players.collect { players ->
                 updatePlayersList(players)
             }
         }
 
+        /**
+         * Listen to updates of timer of current phase.
+         * Update the time progressbar UI on each event in decreasing manner
+         */
         lifecycleScope.launchWhenStarted {
             viewModel.phaseTime.collect { time ->
                 binding.roundTimerProgressBar.progress = time.toInt()
@@ -536,6 +575,15 @@ class DrawingActivity : AppCompatActivity(), LifecycleObserver,
             }
         }
 
+        /**
+         * Listen to phase changes of the game & update UI
+         *
+         * 1) [Room.Phase.WAITING_FOR_PLAYERS] then change phase text to "waiting for players"
+         *    & don't display timer progressbar
+         * 2) [Room.Phase.WAITING_FOR_START] then change phase text to "Waiting for start" & update
+         *    timer progressbar
+         * 3) [Room.Phase.NEW_ROUND] then
+         */
         lifecycleScope.launchWhenStarted {
             viewModel.phase.collect { phase ->
                 when (phase.phase) {
