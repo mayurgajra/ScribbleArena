@@ -20,6 +20,7 @@ import androidx.core.view.isVisible
 import androidx.drawerlayout.widget.DrawerLayout
 import androidx.lifecycle.*
 import androidx.navigation.navArgs
+import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.google.android.material.snackbar.Snackbar
@@ -582,7 +583,10 @@ class DrawingActivity : AppCompatActivity(), LifecycleObserver,
          *    & don't display timer progressbar
          * 2) [Room.Phase.WAITING_FOR_START] then change phase text to "Waiting for start" & update
          *    timer progressbar
-         * 3) [Room.Phase.NEW_ROUND] then
+         * 3) [Room.Phase.NEW_ROUND] then change phase text to "Player is choosing a word", disable
+         *     drawing view & show the words to choose from overlay to a drawing player
+         * 4) [Room.Phase.GAME_RUNNING] then remove the words selection overlay & start the timer
+         * 5) [Room.Phase.SHOW_WORD] then reset all the drawing view,color,thickness, progress
          */
         lifecycleScope.launchWhenStarted {
             viewModel.phase.collect { phase ->
@@ -621,6 +625,10 @@ class DrawingActivity : AppCompatActivity(), LifecycleObserver,
 
                     Room.Phase.SHOW_WORD -> {
                         binding.apply {
+                            /**
+                            In case timer runs out before user could lift touch up or
+                            complete drawing in that case we need to finish last part of the drawing
+                             */
                             if (drawingView.isDrawing) {
                                 drawingView.finishOffDrawing()
                             }
@@ -636,12 +644,21 @@ class DrawingActivity : AppCompatActivity(), LifecycleObserver,
             }
         }
 
+        /**
+         * Listen to events of progress bar visibility & display loading animation when
+         * connecting to socket or performing the call.
+         */
         lifecycleScope.launchWhenStarted {
             viewModel.connectionProgressbarVisible.collect { isVisible ->
                 binding.connectionProgressBar.isVisible = isVisible
             }
         }
 
+        /**
+         * Listen to updates to display the word chooser overlay.
+         * When phase is [Room.Phase.NEW_ROUND] it's displayed
+         * with 3 words sent from the server
+         */
         lifecycleScope.launchWhenStarted {
             viewModel.chooseWordOverlayVisible.collect { isVisible ->
                 binding.chooseWordOverlay.isVisible = isVisible
@@ -649,6 +666,9 @@ class DrawingActivity : AppCompatActivity(), LifecycleObserver,
         }
     }
 
+    /**
+     * Update the players list asynchronously with [DiffUtil]
+     */
     private fun updatePlayersList(players: List<PlayerData>) {
         updatePlayersJob?.cancel()
         updatePlayersJob = lifecycleScope.launch {
@@ -656,6 +676,9 @@ class DrawingActivity : AppCompatActivity(), LifecycleObserver,
         }
     }
 
+    /**
+     * Update the chats list asynchronously with [DiffUtil]
+     */
     private fun updateChatMessageList(chat: List<BaseModel>) {
         updateChatJob?.cancel()
         updateChatJob = lifecycleScope.launch {
@@ -663,6 +686,12 @@ class DrawingActivity : AppCompatActivity(), LifecycleObserver,
         }
     }
 
+    /**
+     * Add the new chat message or announcement event to the adapter list.
+     * Check if we're at the end of the list then scroll down for the new message to appear.
+     * This makes sure that user has not scrolled up to see the older messages.
+     * In that case we don't scroll to bottom.
+     */
     private suspend fun addChatObjectToRecyclerView(chatObject: BaseModel) {
         val canScrollDown = binding.rvChat.canScrollVertically(1)
         updateChatMessageList(chatMessageAdapter.chatObjects + chatObject)
@@ -672,6 +701,10 @@ class DrawingActivity : AppCompatActivity(), LifecycleObserver,
         }
     }
 
+    /**
+     * Listen [DrawingViewModel.SocketEvent] updates & data sent along to update the UI
+     *
+     */
     private fun listenToSocketEvents() = lifecycleScope.launchWhenStarted {
         viewModel.socketEvent.collect { event ->
             when (event) {
