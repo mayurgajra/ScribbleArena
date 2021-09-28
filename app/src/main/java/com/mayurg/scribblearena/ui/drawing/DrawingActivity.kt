@@ -708,6 +708,14 @@ class DrawingActivity : AppCompatActivity(), LifecycleObserver,
     private fun listenToSocketEvents() = lifecycleScope.launchWhenStarted {
         viewModel.socketEvent.collect { event ->
             when (event) {
+                /**
+                 * Called when drawing user is drawing something. Only for guessing players
+                 *
+                 * 1) [MotionEvent.ACTION_DOWN] - Touch event started by the drawing user
+                 * 2) [MotionEvent.ACTION_MOVE] - Drawing user is moving/dragging the finger
+                 *                                without lifting it up drawing a path.
+                 * 3) [MotionEvent.ACTION_UP] - Touch ended by the drawing user
+                 */
                 is DrawingViewModel.SocketEvent.DrawDataEvent -> {
                     val drawData = event.data
                     if (!binding.drawingView.isUserDrawing) {
@@ -725,33 +733,57 @@ class DrawingActivity : AppCompatActivity(), LifecycleObserver,
                     }
                 }
 
+                /**
+                 * Display the chosen word to every one
+                 */
                 is DrawingViewModel.SocketEvent.ChosenWordEvent -> {
                     binding.tvCurWord.text = event.data.chosenWord
                     binding.ibUndo.isEnabled = false
                 }
 
+                /**
+                 * Received a new [ChatMessage]. Add it to the chats recyclerview.
+                 */
                 is DrawingViewModel.SocketEvent.ChatMessageEvent -> {
                     addChatObjectToRecyclerView(event.data)
                 }
 
+                /**
+                 * Received a new [Announcement]. Add it to the chats recyclerview.
+                 */
                 is DrawingViewModel.SocketEvent.AnnouncementEvent -> {
                     addChatObjectToRecyclerView(event.data)
                 }
 
+                /**
+                 * Undo action was performed by the drawing user.
+                 * Call the undo on drawing view.
+                 */
                 is DrawingViewModel.SocketEvent.UndoEvent -> {
                     binding.drawingView.undo()
                 }
 
+                /**
+                 * There was an in the game.
+                 * If it's [GameError.ERROR_ROOM_NOT_FOUND] -> Finish the activity
+                 */
                 is DrawingViewModel.SocketEvent.GameErrorEvent -> {
                     when (event.data.errorType) {
                         GameError.ERROR_ROOM_NOT_FOUND -> finish()
                     }
                 }
 
+                /**
+                 * A whole collections of drawing done in this current round.
+                 * Useful in case of user joins
+                 */
                 is DrawingViewModel.SocketEvent.RoundDrawInfoEvent -> {
                     binding.drawingView.update(event.data)
                 }
 
+                /**
+                 * Clear out the drawing view when game state changes
+                 */
                 is DrawingViewModel.SocketEvent.GameStateEvent -> {
                     binding.drawingView.clear()
                 }
@@ -761,6 +793,16 @@ class DrawingActivity : AppCompatActivity(), LifecycleObserver,
         }
     }
 
+    /**
+     * Listen to socket connection events.
+     *
+     * 1) [WebSocket.Event.OnConnectionOpened] -> When socket connection is opened with the server,
+     * start the [JoinRoomHandshake] & display the progress animation
+     * 2) [WebSocket.Event.OnConnectionFailed] -> When socket connection fails display the message
+     * snack-bar to user & hide the progress animation
+     * 3) [WebSocket.Event.OnConnectionClosed] -> When connection is closed. Just hide the progress
+     * animation.
+     */
     private fun listenToConnectionEvent() = lifecycleScope.launchWhenStarted {
         viewModel.connectionEvent.collect { event ->
             when (event) {
@@ -793,6 +835,9 @@ class DrawingActivity : AppCompatActivity(), LifecycleObserver,
         }
     }
 
+    /**
+     * Set the [chatMessageAdapter] & chat recyclerview
+     */
     private fun setupRecyclerView() = binding.rvChat.apply {
         chatMessageAdapter = ChatMessageAdapter(args.username)
         adapter = chatMessageAdapter
@@ -800,6 +845,9 @@ class DrawingActivity : AppCompatActivity(), LifecycleObserver,
 
     }
 
+    /**
+     * When toggle option item is clicked.
+     */
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
         if (toggle.onOptionsItemSelected(item)) {
             return true
@@ -807,11 +855,19 @@ class DrawingActivity : AppCompatActivity(), LifecycleObserver,
         return super.onOptionsItemSelected(item)
     }
 
+    /**
+     * When app stops/goes in background. Disconnect the socket connection.
+     * As there is no need for realtime messages & drawing events to be displayed
+     */
     @OnLifecycleEvent(Lifecycle.Event.ON_STOP)
     private fun onAppInBackground() {
         viewModel.disconnect()
     }
 
+    /**
+     * Show a exit confirmation dialog when user presses the back button,
+     * If "Yes" is clicked then disconnect from the socket connection & finish the activity.
+     */
     override fun onBackPressed() {
         ExitGameDialog().apply {
             setPositiveClickListener {
