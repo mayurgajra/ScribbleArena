@@ -8,7 +8,7 @@ import com.mayurg.scribblearena.util.Constants.TYPE_CHAT_MESSAGE
  * @param from is username of message sent by user it's unique.
  * @param roomName is room in which message is sent/received
  * @param message is the actual content/message which will be displayed
- * @param timestamp is time when this message was sent.
+ * @param timestamp is time in millis when this message was sent.
  */
 data class ChatMessage(
     val from: String,

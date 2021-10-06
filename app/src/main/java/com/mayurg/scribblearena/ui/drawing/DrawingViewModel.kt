@@ -16,6 +16,7 @@ import com.mayurg.scribblearena.util.CoroutineTimer
 import com.mayurg.scribblearena.util.DispatcherProvider
 import com.tinder.scarlet.WebSocket
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.*
@@ -24,6 +25,12 @@ import java.util.*
 import javax.inject.Inject
 
 /**
+ * A viewmodel responsible for business logic of [DrawingActivity]
+ *
+ * @param dispatchers a provider for [CoroutineDispatcher]. It's a good pattern so that during testing we replace it dummy dispatchers
+ * @param gson is a [Gson] instance used for converting string json to a kotlin class
+ * @param drawingApi is an api which sends, receives socket events related to drawing game
+ *
  * Created On 07/08/2021
  * @author Mayur Gajra
  */
@@ -35,8 +42,22 @@ class DrawingViewModel @Inject constructor(
 ) : ViewModel() {
 
     sealed class SocketEvent {
+        /**
+         * [ChatMessageEvent] is sent/received when chat message is sent/received.
+         * It contains [data] of type [ChatMessage]
+         */
         data class ChatMessageEvent(val data: ChatMessage) : SocketEvent()
+
+        /**
+         * [AnnouncementEvent] is received when an announcement like player joined/left is made from
+         * server. It contains [data] of type [Announcement]
+         */
         data class AnnouncementEvent(val data: Announcement) : SocketEvent()
+
+        /**
+         * [GameStateEvent] is received when game is running to display the word & notify current
+         * drawing player. It contains [data] of type [GameState]
+         */
         data class GameStateEvent(val data: GameState) : SocketEvent()
         data class DrawDataEvent(val data: DrawData) : SocketEvent()
         data class NewWordsEvent(val data: NewWords) : SocketEvent()
@@ -105,11 +126,11 @@ class DrawingViewModel @Inject constructor(
         timerJob?.cancel()
     }
 
-    fun startListening(){
+    fun startListening() {
         _speechToTextEnabled.value = true
     }
 
-    fun stopListening(){
+    fun stopListening() {
         _speechToTextEnabled.value = false
     }
 
