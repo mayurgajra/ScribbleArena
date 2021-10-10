@@ -775,7 +775,7 @@ class DrawingActivity : AppCompatActivity(), LifecycleObserver,
 
                 /**
                  * A whole collections of drawing done in this current round.
-                 * Useful in case of user joins
+                 * Useful in case of user joins after drawing was done.
                  */
                 is DrawingViewModel.SocketEvent.RoundDrawInfoEvent -> {
                     binding.drawingView.update(event.data)
