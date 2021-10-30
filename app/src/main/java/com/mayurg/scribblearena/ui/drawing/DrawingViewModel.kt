@@ -180,7 +180,14 @@ class DrawingViewModel @Inject constructor(
     private val socketEventChannel = Channel<SocketEvent>()
     val socketEvent = socketEventChannel.receiveAsFlow().flowOn(dispatchers.io)
 
+    /**
+     * [timer] is custom made [CoroutineTimer] which emits the function for given duration.
+     */
     private val timer = CoroutineTimer()
+
+    /**
+     * [timerJob] is a [Job] reference to keep reference & cancel the job before starting the new one
+     */
     private var timerJob: Job? = null
 
     init {
@@ -188,6 +195,11 @@ class DrawingViewModel @Inject constructor(
         observeBaseModels()
     }
 
+    /**
+     * Set the timer job for given duration. Usually timer get set on every phase change of the game.
+     *
+     * @param [duration] is the time in milliseconds for which timer should run.
+     */
     private fun setTimer(duration: Long) {
         timerJob?.cancel()
         timerJob = timer.timeAndEmit(duration, viewModelScope) {
@@ -195,34 +207,68 @@ class DrawingViewModel @Inject constructor(
         }
     }
 
+    /**
+     * Cancel the running [timerJob]. This is called when there are less than 2 players in the room.
+     * to indicate "Waiting for players"
+     */
     fun cancelTimer() {
         timerJob?.cancel()
     }
 
+    /**
+     * Indicate the app is listening for the user for speech to text feature & will add the guesses.
+     */
     fun startListening() {
         _speechToTextEnabled.value = true
     }
 
+    /**
+     * Indicate the app has stopped listening for the user for speech to text feature & will add the guesses.
+     */
     fun stopListening() {
         _speechToTextEnabled.value = false
     }
 
+    /**
+     * Update the path data being drawn by drawing player
+     *
+     * @param stack of [DrawingView.PathData]
+     */
     fun setPathData(stack: Stack<DrawingView.PathData>) {
         _pathData.value = stack
     }
 
+    /**
+     * Update the value of [_chooseWordOverlayVisible] which changes the visibility of choosing the
+     * word from 3 words for drawing player before the round begins.
+     *
+     * @param [isVisible] true if should be displayed false otherwise
+     */
     fun setChooseWordOverlayVisibility(isVisible: Boolean) {
         _chooseWordOverlayVisible.value = isVisible
     }
 
+    /**
+     * Update the value of [_connectionProgressbarVisible] which changes the visibility of progressbar
+     *
+     * @param [isVisible] true if should be displayed false otherwise
+     */
     fun setConnectionProgressbarVisibility(isVisible: Boolean) {
         _connectionProgressbarVisible.value = isVisible
     }
 
+    /**
+     * Update the value of [_selectedColorButtonId] which manages the selected color id.
+     *
+     * @param id is the resource id.
+     */
     fun checkRadioButton(id: Int) {
         _selectedColorButtonId.value = id
     }
 
+    /**
+     * Observe the [WebSocket.Event] & pass them through [connectionEventChannel] for the UI
+     */
     private fun observeEvents() {
         viewModelScope.launch(dispatchers.io) {
             drawingApi.observeEvents().collect { event ->
@@ -231,6 +277,10 @@ class DrawingViewModel @Inject constructor(
         }
     }
 
+    /**
+     * Observe the [BaseModel] events like [DrawData], [DrawAction], [ChatMessage] etc. coming through
+     * [drawingApi] sockets & send them [socketEventChannel] for UI.
+     */
     private fun observeBaseModels() {
         viewModelScope.launch(dispatchers.io) {
             drawingApi.observeBaseModels().collect { data ->
@@ -304,21 +354,40 @@ class DrawingViewModel @Inject constructor(
         }
     }
 
+    /**
+     * Send the socket disconnection request to server.
+     */
     fun disconnect() {
         sendBaseModel(DisconnectRequest())
     }
 
+    /**
+     * Send the chosen word by drawing player to server.
+     *
+     * @param word is the string word chosen
+     * @param roomName is name of current room in which this player is.
+     */
     fun chooseWord(word: String, roomName: String) {
         val chosenWord = ChosenWord(word, roomName)
         sendBaseModel(chosenWord)
     }
 
+    /**
+     * Send the [BaseModel] through [drawingApi] socket
+     *
+     * @param data of [BaseModel] to send through socket like [Ping], [ChosenWord], [DrawAction] etc.
+     */
     fun sendBaseModel(data: BaseModel) {
         viewModelScope.launch(dispatchers.io) {
             drawingApi.sendBaseModel(data)
         }
     }
 
+    /**
+     * Send the chat message in current playing room through [drawingApi] socket
+     *
+     * @param message is the message to send in the room & the message must not be empty.
+     */
     fun sendChatMessage(message: ChatMessage) {
         if (message.message.isEmpty()) {
             return
