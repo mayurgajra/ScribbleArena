@@ -21,17 +21,31 @@ import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.flow.collect
 
 /**
+ * Room creation fragment.
+ *
  * Created On 24/07/2021
  * @author Mayur Gajra
  */
 @AndroidEntryPoint
 class CreateRoomFragment : Fragment(R.layout.fragment_create_room) {
 
+    /**
+     * [binding] holds the reference to the views of [CreateRoomFragment]
+     */
     private var _binding: FragmentCreateRoomBinding? = null
     private val binding: FragmentCreateRoomBinding
         get() = _binding!!
 
+    /**
+     * [viewModel] is used to perform business logic. e.g creating room,validating room name
+     * & passing thr result to UI.
+     */
     private val viewModel: CreateRoomViewModel by viewModels()
+
+    /**
+     * [args] is the bundle of arguments passed safely using [navArgs]. It contains "username" chosen
+     * by player.
+     */
     private val args: CreateRoomFragmentArgs by navArgs()
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
@@ -39,7 +53,15 @@ class CreateRoomFragment : Fragment(R.layout.fragment_create_room) {
         _binding = FragmentCreateRoomBinding.bind(view)
         setupRoomSizeSpinner()
         listenToEvents()
+        setCreateRoomClickEvent()
+    }
 
+    /**
+     * Setup the click listener on create button.
+     *
+     * Call create room method of [viewModel] & make the progress bar visible on click.
+     */
+    private fun setCreateRoomClickEvent() {
         binding.btnCreateRoom.setOnClickListener {
             binding.createRoomProgressBar.isVisible = true
             viewModel.createRoom(
@@ -52,6 +74,11 @@ class CreateRoomFragment : Fragment(R.layout.fragment_create_room) {
         }
     }
 
+    /**
+     * Listens to setup events emitted by [viewModel] after verifying the input data.
+     * E.g InputEmptyError,InputTooShortError.
+     * Shows the appropriate indicators in case of error or else performs the action.
+     */
     private fun listenToEvents() {
         lifecycleScope.launchWhenStarted {
             viewModel.setupEvent.collect { event ->
@@ -112,12 +139,18 @@ class CreateRoomFragment : Fragment(R.layout.fragment_create_room) {
         }
     }
 
+    /**
+     * Populate data in the maximum player count spinner.
+     */
     private fun setupRoomSizeSpinner() {
         val roomSizes = resources.getStringArray(R.array.room_size_array)
         val adapter = ArrayAdapter(requireContext(), R.layout.textview_room_size, roomSizes)
         binding.tvMaxPersons.setAdapter(adapter)
     }
 
+    /**
+     * Destroy the binding onDestroy.
+     */
     override fun onDestroy() {
         super.onDestroy()
         _binding = null
