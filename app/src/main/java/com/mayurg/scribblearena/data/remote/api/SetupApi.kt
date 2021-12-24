@@ -45,7 +45,7 @@ interface SetupApi {
     ): Response<List<Room>>
 
     /**
-     * Get the list of all rooms available on server
+     * Join the room with logged in user
      *
      * @param username the name of currently logged in user.
      * @param roomName the name of room user wants to join
